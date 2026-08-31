@@ -6,15 +6,15 @@ const CONFIG = {
   businessName: "MS Suplementos",
 
   // TODO: reemplazar por el número real, formato 549 + código de área + número, sin espacios ni signos.
-  whatsappNumber: "549XXXXXXXXXX",
+  whatsappNumber: "5491125613113",
 
   // TODO: confirmar usuario final de Instagram.
-  instagramHandle: "@myssuplementos",
+  instagramHandle: "@mys.suplementos",
 
   // TODO: completar cuando esté creado.
-  email: "[EMAIL]",
+  email: "mssuplementos.ok@gmail.com",
 
-  hours: "[HORARIO DE ATENCIÓN]",
+  hours: "9hs a 21hs",
 
   shipping: {
     freeShippingThreshold: 80000,
