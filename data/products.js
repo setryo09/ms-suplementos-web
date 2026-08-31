@@ -63,7 +63,7 @@ const PRODUCTS = [
     hasVariants: true,
     variants: [
       { id: "vainilla", label: "Vainilla", inStock: true },
-      { id: "chocolate", label: "Chocolate", inStock: false },
+      { id: "chocolate", label: "Chocolate", inStock: true },
     ],
   },
 ];
