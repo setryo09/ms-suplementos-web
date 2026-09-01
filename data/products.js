@@ -29,10 +29,23 @@ const PRODUCTS = [
     oldPrice: 30000,
     category: "creatina",
     badge: "Lanzamiento",
-    // TODO: reemplazar por foto real del envase, sin texto superpuesto, fondo neutro.
-    image: "images/creatina-paquete-300g.png",
-    hasVariants: false,
-    inStock: true,
+    hasVariants: true,
+    variants: [
+      {
+        id: "pote",
+        label: "Pote",
+        inStock: true,
+        // TODO: reemplazar por foto real del pote, sin texto superpuesto.
+        image: "images/creatina-pote-300g.png",
+      },
+      {
+        id: "paquete",
+        label: "Paquete",
+        inStock: true,
+        // TODO: reemplazar por foto real del paquete, sin texto superpuesto.
+        image: "images/Creatina-paquete-300g.png",
+      },
+    ],
   },
   {
     id: "whey-908g-gold-line",
@@ -58,12 +71,22 @@ const PRODUCTS = [
     oldPrice: 70000,
     category: "proteina",
     badge: "Lanzamiento",
-    // TODO: reemplazar por foto real del envase, sin texto superpuesto, fondo neutro.
-    image: "images/Whey-chocolate-908g.png",
     hasVariants: true,
     variants: [
-      { id: "vainilla", label: "Vainilla", inStock: true },
-      { id: "chocolate", label: "Chocolate", inStock: true },
+      {
+        id: "vainilla",
+        label: "Vainilla",
+        inStock: true,
+        // TODO: reemplazar por foto real del pote sabor vainilla, sin texto superpuesto.
+        image: "images/Whey-vainilla-908g.png",
+      },
+      {
+        id: "chocolate",
+        label: "Chocolate",
+        inStock: true,
+        // TODO: reemplazar por foto real del pote sabor chocolate, sin texto superpuesto.
+        image: "images/Whey-chocolate-908g.png",
+      },
     ],
   },
 ];
