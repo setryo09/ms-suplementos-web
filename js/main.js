@@ -20,6 +20,14 @@ function isProductFullyOutOfStock(product) {
   return product.variants.every((v) => !v.inStock);
 }
 
+function getDisplayImage(product) {
+  if (product.hasVariants) {
+    const variant = getVariant(product, state.selectedVariant[product.id]);
+    if (variant && variant.image) return variant.image;
+  }
+  return product.image;
+}
+
 /* ---------- Render de productos ---------- */
 
 function renderProducts() {
@@ -45,7 +53,7 @@ function buildProductCard(product) {
   const media = document.createElement("div");
   media.className = "product-card__media";
   media.innerHTML =
-    `<img src="${product.image}" alt="${product.name}" loading="lazy">` +
+    `<img src="${getDisplayImage(product)}" alt="${product.name}" loading="lazy">` +
     (product.badge && !outOfStock
       ? `<span class="badge badge--accent">${product.badge}</span>`
       : "") +
