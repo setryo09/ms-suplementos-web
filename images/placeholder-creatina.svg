@@ -1,9 +1,0 @@
-<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="300" fill="none"/>
-  <g fill="none" stroke="#7ed321" stroke-width="2">
-    <path d="M100 70 L200 70 L210 100 L210 250 L90 250 L90 100 Z"/>
-    <line x1="90" y1="120" x2="210" y2="120"/>
-  </g>
-  <text x="150" y="175" text-anchor="middle" fill="#5a5a5a" font-family="Arial, sans-serif" font-size="13">CREATINA</text>
-  <text x="150" y="270" text-anchor="middle" fill="#4a4a4a" font-family="Arial, sans-serif" font-size="11">Foto de producto próximamente</text>
-</svg>
