@@ -7,7 +7,7 @@
 const PRODUCTS = [
   {
     id: "creatina-300g",
-    name: "Creatina Monohidrato Body Advance",
+    name: "Creatina Monohidrato Body Advance Gold Line",
     weight: "300g",
     shortDescription:
       "100% pura, micronizada, sin sabor. Fuerza, rendimiento y recuperación.",
