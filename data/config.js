@@ -9,12 +9,12 @@ const CONFIG = {
   whatsappNumber: "5491125613113",
 
   // TODO: confirmar usuario final de Instagram.
-  instagramHandle: "@mys.suplementos",
+  instagramHandle: "@myssuplementos",
 
   // TODO: completar cuando esté creado.
-  email: "mssuplementos.ok@gmail.com",
+  email: "Mssuplementos.ok@gmail.com",
 
-  hours: "9hs a 21hs",
+  hours: "9:00 a 18:00",
 
   shipping: {
     freeShippingThreshold: 80000,
@@ -23,4 +23,11 @@ const CONFIG = {
   },
 
   whatsappDefaultMessage: "Hola MS, quería consultar por los suplementos.",
+
+  // Registro de pedidos en Google Sheets (ver instrucciones aparte).
+  // TODO: pegar acá la URL que te da Google al desplegar el Apps Script (termina en /exec).
+  ordersWebhookUrl: "https://script.google.com/macros/s/AKfycbyOKeVMC7_h-shbutKJGjO2whdU80n72WU0sG-Px2tDMspJP2VFQ6qF6Ct-4mr6LVPZ/exec",
+  // Este código tiene que ser IDÉNTICO al que pongas en el Apps Script (variable SECRET).
+  // Ya generado, no hace falta que lo cambies, solo copiarlo en los dos lugares.
+  ordersWebhookSecret: "YDUXVQx6an2ORL5VWXZYSln1",
 };
