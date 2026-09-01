@@ -64,7 +64,7 @@ const PRODUCTS = [
     usage:
       "Mezclar 1-2 medidas en agua, leche o tu bebida preferida, preferentemente después del entrenamiento o distribuido durante el día según tu requerimiento de proteína.",
     // TODO: completar con la información nutricional exacta del envase de cada sabor.
-    ingredients: null,
+    ingredients: Proteína concentrada de suero de leche (WPC), BCAA's, L-Glutamina, Creatina monohidrato, Vitamina C, saborizantes y edulcorantes. Contiene leche (alérgeno).,
     warnings:
       "Suplemento dietario. No reemplaza una alimentación variada y equilibrada. Mantener fuera del alcance de los niños. Ante cualquier duda, consultar con un profesional de la salud antes de iniciar su consumo.",
     price: 46000,
