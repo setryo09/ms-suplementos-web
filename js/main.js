@@ -319,10 +319,64 @@ function removeDiscountCode() {
   renderCart();
 }
 
+/* ---------- Número de orden y registro en planilla ---------- */
+
+function generateOrderNumber() {
+  const now = new Date();
+  const y = String(now.getFullYear()).slice(-2);
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return "MS-" + y + m + d + "-" + rand;
+}
+
+function logOrderToSheet(orderNumber) {
+  if (!CONFIG.ordersWebhookUrl) return; // todavía no configuraste la planilla, no hace nada
+
+  const subtotal = cartSubtotal();
+  const discount = discountAmount(subtotal);
+  const itemsText = state.cart
+    .map((item) => {
+      const product = getProduct(item.productId);
+      const variant = getVariant(product, item.variantId);
+      return (
+        item.quantity +
+        "x " +
+        product.name +
+        (variant ? " (" + variant.label + ")" : "")
+      );
+    })
+    .join(" | ");
+
+  // mode: "no-cors" + Content-Type text/plain evita el bloqueo de CORS típico
+  // de Apps Script. No podemos leer la respuesta, pero el registro se guarda igual.
+  fetch(CONFIG.ordersWebhookUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      secret: CONFIG.ordersWebhookSecret,
+      orderNumber,
+      items: itemsText,
+      discountCode: state.appliedCode ? state.appliedCode.code : "",
+      subtotal,
+      discount,
+      total: subtotal - discount,
+    }),
+  }).catch(() => {
+    // Si falla el registro en la planilla, no bloqueamos el pedido —
+    // el cliente igual completa la compra por WhatsApp.
+  });
+}
+
 /* ---------- Checkout por WhatsApp ---------- */
 
-function buildOrderSummary() {
-  const lines = ["Hola MS, quiero hacer este pedido:", ""];
+function buildOrderSummary(orderNumber) {
+  const lines = [
+    "Hola MS, quiero hacer este pedido:",
+    "N° de orden: " + orderNumber,
+    "",
+  ];
   state.cart.forEach((item) => {
     const product = getProduct(item.productId);
     const variant = getVariant(product, item.variantId);
@@ -349,7 +403,9 @@ function buildOrderSummary() {
 
 function checkout() {
   if (state.cart.length === 0) return;
-  const message = buildOrderSummary();
+  const orderNumber = generateOrderNumber();
+  logOrderToSheet(orderNumber);
+  const message = buildOrderSummary(orderNumber);
   window.open(buildWhatsAppLink(CONFIG.whatsappNumber, message), "_blank");
 }
 
