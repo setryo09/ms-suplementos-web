@@ -25,8 +25,8 @@ const PRODUCTS = [
     ingredients: "Creatina monohidrato micronizada 100%.",
     warnings:
       "Suplemento dietario. No reemplaza una alimentación variada y equilibrada. Mantener fuera del alcance de los niños. Ante cualquier duda, consultar con un profesional de la salud antes de iniciar su consumo.",
-    price: 25000,
-    oldPrice: 30000,
+    price: 22000,
+    oldPrice: 25000,
     category: "creatina",
     badge: "Lanzamiento",
     hasVariants: true,
@@ -67,8 +67,8 @@ const PRODUCTS = [
     ingredients: null,
     warnings:
       "Suplemento dietario. No reemplaza una alimentación variada y equilibrada. Mantener fuera del alcance de los niños. Ante cualquier duda, consultar con un profesional de la salud antes de iniciar su consumo.",
-    price: 64000,
-    oldPrice: 70000,
+    price: 46000,
+    oldPrice: 50000,
     category: "proteina",
     badge: "Lanzamiento",
     hasVariants: true,
