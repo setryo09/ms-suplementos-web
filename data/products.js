@@ -30,7 +30,7 @@ const PRODUCTS = [
     category: "creatina",
     badge: "Lanzamiento",
     // TODO: reemplazar por foto real del envase, sin texto superpuesto, fondo neutro.
-    image: "images/placeholder-creatina.svg",
+    image: "images/creatina-paquete-300g.png",
     hasVariants: false,
     inStock: true,
   },
@@ -59,7 +59,7 @@ const PRODUCTS = [
     category: "proteina",
     badge: "Lanzamiento",
     // TODO: reemplazar por foto real del envase, sin texto superpuesto, fondo neutro.
-    image: "images/placeholder-proteina.svg",
+    image: "images/Whey-chocolate-908g.png",
     hasVariants: true,
     variants: [
       { id: "vainilla", label: "Vainilla", inStock: true },
