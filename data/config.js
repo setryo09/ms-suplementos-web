@@ -9,7 +9,7 @@ const CONFIG = {
   whatsappNumber: "5491125613113",
 
   // TODO: confirmar usuario final de Instagram.
-  instagramHandle: "@myssuplementos",
+  instagramHandle: "@mys.suplementos",
 
   // TODO: completar cuando esté creado.
   email: "Mssuplementos.ok@gmail.com",
