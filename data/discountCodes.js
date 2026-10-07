@@ -9,4 +9,4 @@
 //
 // { code: "NOMBRE10", discountPercentage: 0, influencerName: "Nombre", commissionPercentage: 15, active: true }
 
-const DISCOUNT_CODES = [];
+const DISCOUNT_CODES = [ code: "lioduarte", discountPercentage: 10%, influencerName: "lionelduartefitness", comissionPercentaje: 0, active: true];
