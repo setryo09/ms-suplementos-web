@@ -1,0 +1,13 @@
+# Copiá este archivo como .dev.vars (que NO se sube a GitHub) para probar en tu PC.
+# En producción, cargá cada valor con: npx wrangler secret put NOMBRE
+# No pongas valores reales en este archivo de ejemplo.
+
+# URL desde donde se ve el sitio (en local, la que muestra `npm run dev`).
+PUBLIC_BASE_URL=http://localhost:8787
+
+# --- Mercado Pago (credenciales DE PRUEBA para probar) ---
+MP_ACCESS_TOKEN=
+MP_WEBHOOK_SECRET=
+
+# --- Admin (clave larga y aleatoria para descargar /api/admin/orders.csv) ---
+ADMIN_TOKEN=

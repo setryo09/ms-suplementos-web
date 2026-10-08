@@ -1,0 +1,18 @@
+# Secretos y entorno local — NUNCA subir
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.env
+.env.*
+
+# Wrangler / Node
+node_modules/
+.wrangler/
+
+# Respaldo del sitio anterior (solo local)
+_respaldo-original/
+
+# Exportaciones con datos de clientes
+*.xlsx
+~$*
+*.csv

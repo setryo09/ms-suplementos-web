@@ -1,0 +1,33 @@
+# Configuración de Cloudflare Workers (sitio + API + base D1).
+# Este archivo NO lleva secretos. Los secretos se cargan con
+#   npx wrangler secret put NOMBRE
+# (o desde el panel de Cloudflare). Ver docs/01-PUESTA-EN-MARCHA.md
+
+name = "mys-suplementos"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = ["/api/*"]
+
+# Registro oficial de pedidos.
+[[d1_databases]]
+binding = "DB"
+database_name = "mys-pedidos"
+# COMPLETAR: pegá el database_id que te muestra `npx wrangler d1 create mys-pedidos`.
+database_id = "COMPLETAR-DATABASE-ID"
+migrations_dir = "migrations"
+
+# Variables NO secretas.
+[vars]
+BUSINESS_NAME = "MYS Suplementos"
+ORDER_PREFIX = "MYS"
+# Opcional: el primer pedido será MYS-(OFFSET+1). Definilo antes del primer pedido y no lo cambies.
+ORDER_NUMBER_OFFSET = "0"
+# COMPLETAR al publicar: URL pública del sitio, sin barra final (ej. https://tudominio.com.ar).
+# Mientras esté vacía, el pago con Mercado Pago queda desactivado.
+PUBLIC_BASE_URL = ""
+MP_STATEMENT_DESCRIPTOR = "MYS SUPLEMENTOS"
