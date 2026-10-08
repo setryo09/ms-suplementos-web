@@ -9,5 +9,10 @@ PUBLIC_BASE_URL=http://localhost:8787
 MP_ACCESS_TOKEN=
 MP_WEBHOOK_SECRET=
 
+# --- Ualá Bis (credenciales DE PRUEBA para probar) ---
+UALA_USERNAME=
+UALA_CLIENT_ID=
+UALA_CLIENT_SECRET=
+
 # --- Admin (clave larga y aleatoria para descargar /api/admin/orders.csv) ---
 ADMIN_TOKEN=

@@ -107,3 +107,7 @@ export function formatARS(value) {
 export function isMercadoPagoConfigured(env) {
   return Boolean(env.MP_ACCESS_TOKEN && env.PUBLIC_BASE_URL);
 }
+
+export function isUalaConfigured(env) {
+  return Boolean(env.UALA_USERNAME && env.UALA_CLIENT_ID && env.UALA_CLIENT_SECRET && env.PUBLIC_BASE_URL);
+}

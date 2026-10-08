@@ -1,7 +1,7 @@
-// Página de regreso desde Mercado Pago.
+// Página de regreso desde el pago online (Ualá Bis o Mercado Pago).
 // No decide si el pedido está pagado: solo muestra lo que informa el
-// servidor, que se actualiza únicamente con los webhooks de Mercado Pago.
-// Los parámetros que Mercado Pago agrega a la URL (status, collection_status…)
+// servidor, que se actualiza únicamente con los avisos (webhooks) de la plataforma de pago.
+// Los parámetros que la plataforma de pago agrega a la URL (status, etc.)
 // se ignoran a propósito.
 
 import { CONFIG } from "../data/config.js";
@@ -24,11 +24,13 @@ function render(data) {
   pill.className = "status-pill" + (data.paid ? " status-pill--ok" : /Rechazado|Cancelado/.test(data.paymentStatus) ? " status-pill--bad" : "");
 
   if (data.paid) {
-    $("status-text").textContent = `¡Pago confirmado por Mercado Pago! Total ${formatPrice(data.total)}. Te escribimos para coordinar la entrega.`;
-  } else if (data.retryUrl && /Rechazado|Cancelado/.test(data.paymentStatus)) {
-    $("status-text").textContent = "El pago no se completó. Podés intentarlo de nuevo con otro medio.";
+    $("status-text").textContent = `¡Pago confirmado! Total ${formatPrice(data.total)}. Te escribimos para coordinar la entrega.`;
+  } else if (/Rechazado|Cancelado/.test(data.paymentStatus)) {
+    $("status-text").textContent = data.retryUrl
+      ? "El pago no se completó. Podés intentarlo de nuevo con otro medio."
+      : "El pago no se completó. Escribinos por WhatsApp con tu número de pedido y lo resolvemos.";
   } else {
-    $("status-text").textContent = "Todavía no recibimos la confirmación de Mercado Pago. Esta página se actualiza sola.";
+    $("status-text").textContent = "Todavía no recibimos la confirmación del pago. Esta página se actualiza sola.";
   }
 
   const retry = $("retry-btn");

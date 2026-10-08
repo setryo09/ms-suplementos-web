@@ -44,3 +44,20 @@ export function paymentStatusFromMercadoPago(mpStatus) {
       return PAYMENT.IN_PROCESS;
   }
 }
+
+// Estados de órdenes de Ualá Bis -> texto de la planilla.
+// APPROVED: pagado y acreditado; PROCESSED: pagado, pendiente de acreditación.
+export function paymentStatusFromUala(status) {
+  switch (String(status || "").toUpperCase()) {
+    case "APPROVED":
+    case "PROCESSED":
+    case "PROCCESED": // así aparece escrito en un ejemplo de la documentación de Ualá
+      return PAYMENT.PAID;
+    case "REJECTED":
+      return PAYMENT.REJECTED;
+    case "REFUNDED":
+      return PAYMENT.REFUNDED;
+    default:
+      return PAYMENT.IN_PROCESS;
+  }
+}

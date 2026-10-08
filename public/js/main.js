@@ -41,6 +41,7 @@ const state = {
   serverQuote: null, // última cotización del servidor (con código)
   selectedVariant: {},
   apiAvailable: true,
+  uala: false,
   mercadoPago: false,
 };
 
@@ -390,20 +391,29 @@ function renderSummary(container, quote, zone) {
 
 const currentZone = () => String(new FormData($("checkout-form")).get("zone") || "");
 
+// Medios de pago online disponibles (según lo que el servidor tenga configurado).
+const ONLINE_OPTIONS = [
+  { method: "uala", el: "pay-option-uala", enabled: () => state.uala, label: "Pagar con tarjeta" },
+  { method: "mercadopago", el: "pay-option-mp", enabled: () => state.mercadoPago, label: "Pagar con Mercado Pago" },
+];
+const anyOnline = () => ONLINE_OPTIONS.some((o) => o.enabled());
+
 // Si el envío queda a cotizar (GBA por moto / otra zona), no se puede pagar
 // online todavía: el pedido se registra y se coordina por WhatsApp.
 function updatePaymentOptions() {
-  const mpOption = $("pay-option-mp");
-  const mpRadio = mpOption.querySelector("input");
   const ship = checkoutQuote ? shippingInfo(currentZone(), checkoutQuote.subtotal) : null;
   const blocked = Boolean(ship && ship.pendingQuote);
-  mpOption.hidden = !state.mercadoPago;
-  mpRadio.disabled = blocked;
-  mpOption.classList.toggle("pay-option--disabled", blocked);
-  $("pay-option-mp-note").hidden = !blocked || !state.mercadoPago;
-  if (blocked && mpRadio.checked) {
-    document.querySelector('input[name="paymentMethod"][value="whatsapp"]').checked = true;
-  }
+  ONLINE_OPTIONS.forEach((o) => {
+    const label = $(o.el);
+    const radio = label.querySelector("input");
+    label.hidden = !o.enabled();
+    radio.disabled = blocked;
+    label.classList.toggle("pay-option--disabled", blocked);
+    if (blocked && radio.checked) {
+      document.querySelector('input[name="paymentMethod"][value="whatsapp"]').checked = true;
+    }
+  });
+  $("pay-option-mp-note").hidden = !blocked || !anyOnline();
   if (checkoutQuote) renderSummary($("checkout-summary"), checkoutQuote, currentZone());
   updateConfirmLabel();
 }
@@ -412,7 +422,8 @@ function updateConfirmLabel() {
   const btn = $("confirm-btn");
   const method = new FormData($("checkout-form")).get("paymentMethod");
   const total = checkoutQuote ? " · " + formatPrice(checkoutQuote.total) : "";
-  btn.textContent = (method === "mercadopago" ? "Pagar con Mercado Pago" : "Confirmar pedido") + total;
+  const online = ONLINE_OPTIONS.find((o) => o.method === method);
+  btn.textContent = (online ? online.label : "Confirmar pedido") + total;
 }
 
 async function goToCheckout() {
@@ -538,7 +549,7 @@ async function submitOrder(e) {
     return setFeedback(feedback, res.data.error.message + " Revisá el nuevo total y confirmá de nuevo.", "error");
   }
   if (code === "idempotency_conflict") storage.remove("ms_checkout_key");
-  if (code === "mp_not_configured") $("pay-option-mp").hidden = true;
+  if (code === "online_not_configured") { state.uala = false; state.mercadoPago = false; updatePaymentOptions(); }
   if (code === "shipping_quote_required") updatePaymentOptions();
   setFeedback(feedback, res.data?.error?.message || "No pudimos registrar el pedido. Probá de nuevo.", "error");
 }
@@ -552,6 +563,7 @@ function orderWhatsAppMessage(order, customer) {
   if (order.shippingStatus) lines.push("Envío: " + order.shippingStatus);
   lines.push("", `Nombre: ${customer.name}`, `Zona: ${customer.zone}`);
   if (order.paymentMethod === "mercadopago") lines.push("Pago: Mercado Pago");
+  if (order.paymentMethod === "uala") lines.push("Pago: tarjeta (Ualá Bis)");
   return lines.join("\n");
 }
 
@@ -566,7 +578,7 @@ function resetAfterOrder() {
 }
 
 function onOrderCreated(order, customer) {
-  if (order.paymentMethod === "mercadopago" && order.checkoutUrl) {
+  if ((order.paymentMethod === "mercadopago" || order.paymentMethod === "uala") && order.checkoutUrl) {
     storage.set("ms_last_order", { n: order.orderNumber, t: order.publicToken });
     resetAfterOrder();
     window.location.href = order.checkoutUrl;
@@ -656,20 +668,17 @@ async function loadServerConfig() {
   try {
     const res = await api("/api/config");
     state.apiAvailable = Boolean(res.ok);
+    state.uala = Boolean(res.ok && res.data.uala);
     state.mercadoPago = Boolean(res.ok && res.data.mercadoPago);
   } catch {
     state.apiAvailable = false;
   }
-  $("pay-option-mp").hidden = !state.mercadoPago;
-  const radios = document.querySelectorAll('input[name="paymentMethod"]');
-  const preferred = state.mercadoPago ? "mercadopago" : "whatsapp";
-  radios.forEach((r) => (r.checked = r.value === preferred));
-  if (state.mercadoPago) {
-    document.querySelectorAll("[data-faq-payments]").forEach(
-      (el) => (el.textContent = "Podés pagar online con Mercado Pago al confirmar tu pedido, o confirmarlo y coordinar el pago por WhatsApp.")
-    );
+  ONLINE_OPTIONS.forEach((o) => ($(o.el).hidden = !o.enabled()));
+  const preferred = ONLINE_OPTIONS.find((o) => o.enabled())?.method || "whatsapp";
+  document.querySelectorAll('input[name="paymentMethod"]').forEach((r) => (r.checked = r.value === preferred));
+  if (anyOnline()) {
     document.querySelectorAll("[data-payment-copy]").forEach(
-      (el) => (el.textContent = "Pagás online con Mercado Pago o coordinamos el pago")
+      (el) => (el.textContent = "Pagás online con tarjeta o coordinamos el pago")
     );
   }
   if (!state.apiAvailable) console.warn("[MYS] La API (/api) no responde: el checkout queda deshabilitado.");

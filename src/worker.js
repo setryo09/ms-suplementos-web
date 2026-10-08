@@ -1,6 +1,6 @@
 // Servidor de MYS Suplementos (Cloudflare Worker).
 // - Sirve el sitio estático de /public.
-// - /api/*: cotización, pedidos, estado, webhook de Mercado Pago y exportación CSV.
+// - /api/*: cotización, pedidos, estado, webhooks de Ualá Bis / Mercado Pago y exportación CSV.
 // - El registro oficial de pedidos es la base D1.
 //
 // Toda la lógica de dinero (precios, descuentos, totales, estado de pago)
@@ -8,9 +8,10 @@
 
 import { priceItems, buildQuote, normalizeCode, ValidationError } from "./pricing.js";
 import { createPreference, getPayment, verifyWebhookSignature } from "./mercadopago.js";
+import { createUalaOrder, getUalaOrder, fromUalaAmount, UALA_MIN_TOTAL } from "./uala.js";
 import { ordersToCsv } from "./export.js";
 import { shippingFor } from "./shipping.js";
-import { PAYMENT, ORDER, paymentStatusFromMercadoPago } from "./statuses.js";
+import { PAYMENT, ORDER, paymentStatusFromMercadoPago, paymentStatusFromUala } from "./statuses.js";
 import {
   json,
   errorJson,
@@ -21,10 +22,12 @@ import {
   formatOrderNumber,
   parseOrderNumber,
   isMercadoPagoConfigured,
+  isUalaConfigured,
 } from "./util.js";
 
 const ZONES = ["CABA", "GBA", "Otra"];
-const PAYMENT_METHODS = ["mercadopago", "whatsapp"];
+const PAYMENT_METHODS = ["uala", "mercadopago", "whatsapp"];
+const ONLINE_METHODS = new Set(["uala", "mercadopago"]);
 const RETRYABLE = new Set([PAYMENT.WAITING, PAYMENT.REJECTED, PAYMENT.CANCELLED]);
 
 export default {
@@ -47,12 +50,13 @@ async function route(request, env, url) {
   const method = request.method;
 
   if (pathname === "/api/config" && method === "GET") {
-    return json({ ok: true, mercadoPago: isMercadoPagoConfigured(env) });
+    return json({ ok: true, uala: isUalaConfigured(env), mercadoPago: isMercadoPagoConfigured(env) });
   }
   if (pathname === "/api/quote" && method === "POST") return handleQuote(request, env);
   if (pathname === "/api/orders" && method === "POST") return handleCreateOrder(request, env);
   if (pathname === "/api/orders/status" && method === "GET") return handleOrderStatus(env, url);
   if (pathname === "/api/webhooks/mercadopago" && method === "POST") return handleMercadoPagoWebhook(request, env, url);
+  if (pathname === "/api/webhooks/uala" && method === "POST") return handleUalaWebhook(request, env);
   if (pathname === "/api/admin/orders.csv" && method === "GET") return handleOrdersCsv(request, env);
 
   return errorJson("No encontrado.", 404, "not_found");
@@ -127,12 +131,34 @@ function orderResponse(env, order, extra = {}) {
     shippingStatus: order.shipping_status,
     shippingCost: order.shipping_cost,
     items: JSON.parse(order.items_json),
-    checkoutUrl: order.payment_method === "mercadopago" ? order.mp_init_point : null,
+    checkoutUrl: checkoutUrlOf(order),
     ...extra,
   });
 }
 
-async function ensurePreference(env, order) {
+function checkoutUrlOf(order) {
+  if (order.payment_method === "uala") return order.uala_checkout_url || null;
+  if (order.payment_method === "mercadopago") return order.mp_init_point || null;
+  return null;
+}
+
+// Crea (una sola vez por pedido) el cobro online en Ualá o Mercado Pago.
+async function ensurePayment(env, order) {
+  if (order.payment_method === "uala") {
+    if (order.uala_checkout_url) return order;
+    const created = await createUalaOrder(env, {
+      orderNumber: formatOrderNumber(env, order.id),
+      publicToken: order.public_token,
+      total: order.total,
+    });
+    // Si dos reintentos crean la orden a la vez, se queda la primera que se guardó.
+    await env.DB.prepare(
+      "UPDATE orders SET uala_order_id = ?2, uala_checkout_url = ?3 WHERE id = ?1 AND uala_checkout_url IS NULL"
+    )
+      .bind(order.id, created.uuid, created.checkoutUrl)
+      .run();
+    return env.DB.prepare("SELECT * FROM orders WHERE id = ?1").bind(order.id).first();
+  }
   if (order.payment_method !== "mercadopago" || order.mp_init_point) return order;
   const pref = await createPreference(env, {
     orderNumber: formatOrderNumber(env, order.id),
@@ -153,11 +179,11 @@ async function respondExisting(env, existing, requestHash) {
     return errorJson("Este intento de compra ya se usó con otros datos. Recargá la página.", 409, "idempotency_conflict");
   }
   try {
-    return orderResponse(env, await ensurePreference(env, existing), { duplicate: true });
+    return orderResponse(env, await ensurePayment(env, existing), { duplicate: true });
   } catch (err) {
-    console.error("Mercado Pago (reintento):", err.message);
+    console.error("Pago online:", err.message);
     return errorJson(
-      "Tu pedido quedó registrado pero no pudimos abrir Mercado Pago. Probá de nuevo o coordiná por WhatsApp.",
+      "Tu pedido quedó registrado pero no pudimos abrir el pago online. Probá de nuevo o coordiná por WhatsApp.",
       502,
       "payment_unavailable",
       { orderNumber: formatOrderNumber(env, existing.id) }
@@ -174,9 +200,13 @@ async function handleCreateOrder(request, env) {
 
   const paymentMethod = String(body.paymentMethod || "");
   if (!PAYMENT_METHODS.includes(paymentMethod)) return errorJson("Elegí un medio de pago.", 400, "invalid_payment_method");
-  if (paymentMethod === "mercadopago" && !isMercadoPagoConfigured(env)) {
-    return errorJson("El pago online todavía no está disponible. Elegí coordinar por WhatsApp.", 400, "mp_not_configured");
+  if (
+    (paymentMethod === "mercadopago" && !isMercadoPagoConfigured(env)) ||
+    (paymentMethod === "uala" && !isUalaConfigured(env))
+  ) {
+    return errorJson("El pago online todavía no está disponible. Elegí coordinar por WhatsApp.", 400, "online_not_configured");
   }
+  const isOnline = ONLINE_METHODS.has(paymentMethod);
 
   const customer = validateCustomer(body.customer);
   const lines = priceItems(body.items);
@@ -196,7 +226,10 @@ async function handleCreateOrder(request, env) {
   // El envío por moto a GBA se cotiza con Uber en el momento y se confirma
   // por WhatsApp: no se puede cobrar online hasta tener esa cotización.
   const shipping = shippingFor(customer.zone, quote.subtotal);
-  if (shipping.pendingQuote && paymentMethod === "mercadopago") {
+  if (paymentMethod === "uala" && quote.total < UALA_MIN_TOTAL) {
+    return errorJson("El monto es menor al mínimo para pagar online.", 422, "amount_too_low");
+  }
+  if (shipping.pendingQuote && isOnline) {
     return errorJson(
       "El envío a tu zona se cotiza al momento por WhatsApp. Elegí \"Coordinar por WhatsApp\" y te confirmamos el costo antes de cobrar.",
       422,
@@ -212,7 +245,6 @@ async function handleCreateOrder(request, env) {
   const existing = await env.DB.prepare("SELECT * FROM orders WHERE idempotency_key = ?1").bind(key).first();
   if (existing) return respondExisting(env, existing, requestHash);
 
-  const isMP = paymentMethod === "mercadopago";
   const inserted = await env.DB.prepare(
     `INSERT INTO orders (
        idempotency_key, request_hash, public_token, created_at,
@@ -240,8 +272,8 @@ async function handleCreateOrder(request, env) {
       quote.discount,
       quote.total,
       paymentMethod,
-      isMP ? PAYMENT.WAITING : PAYMENT.TO_ARRANGE,
-      isMP ? ORDER.WAITING_PAYMENT : ORDER.TO_ARRANGE,
+      isOnline ? PAYMENT.WAITING : PAYMENT.TO_ARRANGE,
+      isOnline ? ORDER.WAITING_PAYMENT : ORDER.TO_ARRANGE,
       shipping.status,
       shipping.cost
     )
@@ -253,7 +285,7 @@ async function handleCreateOrder(request, env) {
     return respondExisting(env, winner, requestHash);
   }
 
-  if (!isMP) return orderResponse(env, inserted);
+  if (!isOnline) return orderResponse(env, inserted);
   return respondExisting(env, inserted, requestHash);
 }
 
@@ -262,7 +294,7 @@ async function handleOrderStatus(env, url) {
   const token = url.searchParams.get("t") || "";
   if (!id) return errorJson("Pedido no encontrado.", 404, "not_found");
   const order = await env.DB.prepare(
-    "SELECT id, public_token, payment_status, order_status, total, payment_method, mp_init_point, shipping_status FROM orders WHERE id = ?1"
+    "SELECT id, public_token, payment_status, order_status, total, payment_method, mp_init_point, uala_checkout_url, shipping_status FROM orders WHERE id = ?1"
   )
     .bind(id)
     .first();
@@ -277,8 +309,14 @@ async function handleOrderStatus(env, url) {
     paymentMethod: order.payment_method,
     shippingStatus: order.shipping_status,
     // Permite reintentar el pago si el anterior fue rechazado o quedó a medias.
+    // Ualá: el link sirve mientras la orden está pendiente; si fue rechazada
+    // se coordina por WhatsApp.
     retryUrl:
-      order.payment_method === "mercadopago" && RETRYABLE.has(order.payment_status) ? order.mp_init_point : null,
+      order.payment_method === "mercadopago" && RETRYABLE.has(order.payment_status)
+        ? order.mp_init_point
+        : order.payment_method === "uala" && order.payment_status === PAYMENT.WAITING
+          ? order.uala_checkout_url
+          : null,
   });
 }
 
@@ -359,6 +397,63 @@ async function handleMercadoPagoWebhook(request, env, url) {
     ).bind(paymentId, mpStatus, statusDetail, order.id, new Date().toISOString()),
   ]);
 
+  return json({ ok: true });
+}
+
+/* ---------- Webhook de Ualá Bis ---------- */
+
+// Ualá avisa { uuid, external_reference, status, ... } sin firma. Por eso solo
+// usamos el uuid para consultar la orden real a la API de Ualá con nuestro
+// token, y comprobamos que pertenezca a uno de nuestros pedidos y que el
+// monto coincida. Respondemos 200 salvo error temporal (Ualá reintenta 3 veces).
+async function handleUalaWebhook(request, env) {
+  if (!isUalaConfigured(env)) return errorJson("Ualá no configurado.", 503, "uala_not_configured");
+  const body = (await readJson(request)) || {};
+  const uuid = String(body.uuid || "");
+  if (!/^[A-Za-z0-9-]{8,64}$/.test(uuid)) return json({ ok: true, ignored: "sin_uuid" });
+
+  const order = await env.DB.prepare("SELECT * FROM orders WHERE uala_order_id = ?1").bind(uuid).first();
+  if (!order) return json({ ok: true, ignored: "orden_desconocida" });
+
+  const remote = await getUalaOrder(env, uuid);
+  const ualaStatus = String(remote.status || "").toUpperCase();
+  const orderNumber = formatOrderNumber(env, order.id);
+  if (remote.external_reference && remote.external_reference !== orderNumber) {
+    console.error("Ualá: external_reference no coincide con el pedido", orderNumber);
+    return json({ ok: true, ignored: "referencia_distinta" });
+  }
+
+  const already = await env.DB.prepare(
+    "SELECT 1 FROM payment_events WHERE payment_id = ?1 AND status = ?2 AND status_detail = 'uala'"
+  )
+    .bind(uuid, ualaStatus)
+    .first();
+  if (already) return json({ ok: true, duplicate: true });
+
+  let newPaymentStatus = paymentStatusFromUala(ualaStatus);
+  let newOrderStatus = order.order_status;
+  if (newPaymentStatus === PAYMENT.PAID) {
+    const amountOk = Math.round(fromUalaAmount(env, remote.amount)) === order.total;
+    if (!amountOk) {
+      console.error("Ualá: el monto no coincide con el pedido", orderNumber);
+      newPaymentStatus = PAYMENT.REVIEW;
+    } else if (order.order_status === ORDER.WAITING_PAYMENT) {
+      newOrderStatus = ORDER.TO_PREPARE;
+    }
+  }
+
+  await env.DB.batch([
+    env.DB.prepare("UPDATE orders SET payment_status = ?2, order_status = ?3, uala_status = ?4 WHERE id = ?1").bind(
+      order.id,
+      newPaymentStatus,
+      newOrderStatus,
+      ualaStatus
+    ),
+    env.DB.prepare(
+      `INSERT INTO payment_events (payment_id, status, status_detail, order_id, received_at)
+       VALUES (?1, ?2, 'uala', ?3, ?4) ON CONFLICT DO NOTHING`
+    ).bind(uuid, ualaStatus, order.id, new Date().toISOString()),
+  ]);
   return json({ ok: true });
 }
 

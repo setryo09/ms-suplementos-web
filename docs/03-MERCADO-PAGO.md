@@ -2,6 +2,8 @@
 
 Importante: si el envío está pendiente de cotización (GBA por moto debajo del envío gratis, u otra zona), el sitio no ofrece Mercado Pago y el servidor lo rechaza; ese pedido se coordina por WhatsApp. Ver [09-ENVIOS-UBER](09-ENVIOS-UBER.md).
 
+> El negocio cobra con **Ualá Bis** ([guía 10](10-UALA.md)). Mercado Pago queda implementado pero desactivado: solo se activa si cargás sus credenciales.
+
 Ya está implementado en el servidor (`src/mercadopago.js` y el webhook en `src/worker.js`). Falta que crees la aplicación y cargues las credenciales. Mientras no estén cargadas, la opción "Mercado Pago" no aparece y la tienda sigue funcionando con "Coordinar por WhatsApp".
 
 Reglas de seguridad que ya cumple el código:

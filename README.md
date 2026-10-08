@@ -15,7 +15,7 @@ Sitio de la tienda + servidor de pedidos. Todo corre en **Cloudflare Workers** (
 3. En "Confirmá tu pedido" ve el detalle y el **total calculado por el servidor**.
 4. Al confirmar, el servidor vuelve a validar productos, stock, cantidades, precios, código y envío (no usa ningún precio enviado por el navegador) y guarda el pedido en **D1**, el registro oficial, con un **número consecutivo** (`MYS-00001`, `MYS-00002`, …).
 5. Según el caso:
-   - **Mercado Pago** (si el envío ya está definido): se cobra el total del servidor. El pedido pasa a "Pagado" **solo** cuando llega el webhook de Mercado Pago y el servidor confirma el pago consultando la API.
+   - **Pagar con tarjeta (Ualá Bis)** (si el envío ya está definido): se cobra el total del servidor. El pedido pasa a "Pagado" **solo** cuando llega el aviso de Ualá y el servidor confirma el pago consultando la API de Ualá. (Mercado Pago también está implementado, desactivado.)
    - **Coordinar por WhatsApp** (obligatorio si el envío está a cotizar): el pedido queda registrado y el cliente envía el resumen al WhatsApp del negocio (+54 9 11 2561-3113). Ustedes cotizan el envío en Uber, le confirman el costo y recién ahí cobran.
 6. Todos los pedidos se descargan en un **CSV** que se abre con Excel ([guía 2](docs/02-EXPORTAR-PEDIDOS.md)).
 
@@ -45,6 +45,7 @@ Protecciones incluidas:
 7. [Ideas de marketing y borradores semanales automáticos](docs/07-MARKETING.md)
 8. [GitHub](docs/08-GITHUB.md)
 9. [Envío a GBA por moto y Uber Direct](docs/09-ENVIOS-UBER.md)
+10. [Cobrar con tarjeta usando Ualá Bis](docs/10-UALA.md)
 
 ## Datos que faltan completar (no se inventaron)
 
