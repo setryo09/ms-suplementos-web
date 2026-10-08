@@ -16,3 +16,6 @@ _respaldo-original/
 *.xlsx
 ~$*
 *.csv
+
+# Claves locales (nunca subir)
+credenciales-locales/

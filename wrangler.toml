@@ -26,7 +26,8 @@ BUSINESS_NAME = "MYS Suplementos"
 ORDER_PREFIX = "MYS"
 # Opcional: el primer pedido será MYS-(OFFSET+1). Definilo antes del primer pedido y no lo cambies.
 ORDER_NUMBER_OFFSET = "0"
-# COMPLETAR al publicar: URL pública del sitio, sin barra final (ej. https://tudominio.com.ar).
-# Mientras esté vacía, el pago con Mercado Pago queda desactivado.
-PUBLIC_BASE_URL = ""
+# URL pública del sitio, sin barra final. Hoy: dirección de prueba de Cloudflare.
+# Cambiala cuando conectes tu dominio.
+# Mercado Pago se activa cuando además se carga el secreto MP_ACCESS_TOKEN.
+PUBLIC_BASE_URL = "https://mys-suplementos.mys-suplementos-web.workers.dev"
 MP_STATEMENT_DESCRIPTOR = "MYS SUPLEMENTOS"
