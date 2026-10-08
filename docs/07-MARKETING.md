@@ -44,7 +44,7 @@ Cada semana: **2 publicaciones**, **1 reel**, **3 historias**.
 
 | Formato | Idea | Fuente |
 |---|---|---|
-| Publicación | Envíos: CABA entrega en el día sin cargo; GBA por moto (costo según cotización de Uber al momento, confirmado por WhatsApp), gratis desde $80.000. | Envíos / FAQ |
+| Publicación | Envíos: despacho en hasta 72 hs; CABA sin cargo; GBA por moto (costo según cotización de Uber al momento, confirmado por WhatsApp), gratis desde $80.000. | Envíos / FAQ |
 | Publicación | "Cómo comprar en 3 pasos": armás el pedido, confirmás y recibís tu número, pagás y coordinamos por WhatsApp. | Sección "Cómo comprar" |
 | Reel | Grabación de pantalla: compra en la web desde el celular hasta el número de pedido. | Web |
 | Historias | 1) FAQ "¿Puedo comprar más de un producto?". 2) FAQ "¿Cómo funciona el envío gratis?". 3) "¿Tenés código de creador? Cargalo en el carrito: 10% off". | FAQ |

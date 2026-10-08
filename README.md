@@ -50,7 +50,6 @@ Protecciones incluidas:
 
 | Dato | Dónde |
 |---|---|
-| Logo con la marca MYS (las imágenes actuales dicen "MS") | `public/images/logo-icon.png` y `logo-ms.png` |
 | Fotos de producto más livianas (las actuales pesan ~1,6–2,3 MB cada una y tardan en celulares con datos móviles) | `public/images/` |
 | Páginas legales (términos, privacidad, cambios y devoluciones) | Footer de `public/index.html` |
 | URL pública del sitio | `wrangler.toml` → `PUBLIC_BASE_URL` |
