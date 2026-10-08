@@ -1,0 +1,37 @@
+# Configuración de Cloudflare Workers (sitio + API + base D1).
+# Este archivo NO lleva secretos. Los secretos se cargan con
+#   npx wrangler secret put NOMBRE
+# (o desde el panel de Cloudflare). Ver docs/01-PUESTA-EN-MARCHA.md
+
+name = "mys-suplementos"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = ["/api/*"]
+
+# Registro oficial de pedidos.
+[[d1_databases]]
+binding = "DB"
+database_name = "mys-pedidos"
+database_id = "ca8b1bef-0646-40cb-8d7d-97b79cd04e9c"
+migrations_dir = "migrations"
+
+# Variables NO secretas.
+[vars]
+BUSINESS_NAME = "MYS Suplementos"
+ORDER_PREFIX = "MYS"
+# Opcional: el primer pedido será MYS-(OFFSET+1). Definilo antes del primer pedido y no lo cambies.
+ORDER_NUMBER_OFFSET = "0"
+# URL pública del sitio, sin barra final. Hoy: dirección de prueba de Cloudflare.
+# Cambiala cuando conectes tu dominio.
+# Mercado Pago se activa cuando además se carga el secreto MP_ACCESS_TOKEN.
+PUBLIC_BASE_URL = "https://mys-suplementos.mys-suplementos-web.workers.dev"
+MP_STATEMENT_DESCRIPTOR = "MYS SUPLEMENTOS"
+# Ualá Bis: "stage" = pruebas (pagos simulados), "production" = cobros reales.
+UALA_ENV = "stage"
+# Formato del monto que se envía a Ualá: "cents" (según la documentación) o "pesos".
+UALA_AMOUNT_FORMAT = "cents"

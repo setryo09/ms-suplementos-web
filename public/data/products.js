@@ -1,10 +1,15 @@
-// Catálogo de productos. Para agregar un producto nuevo, sumá un objeto acá
-// siguiendo el mismo formato — no hace falta tocar ningún otro archivo.
+// Catálogo de productos — FUENTE ÚNICA DE PRECIOS.
+// Este archivo lo usa el navegador para mostrar la tienda y el servidor
+// (src/) para calcular el total real de cada pedido. Si cambiás un precio
+// acá, el servidor cobra ese precio: el navegador no puede alterarlo.
 //
-// Para actualizar stock: cambiá `inStock` (producto sin variantes) o el
-// `inStock` de la variante correspondiente (producto con variantes) a true/false.
+// Para agregar un producto, sumá un objeto con el mismo formato.
+// Stock: cambiá `inStock` (producto sin variantes) o el `inStock` de la
+// variante a true/false. El servidor rechaza pedidos de productos sin stock.
+//
+// Precios en pesos argentinos, números enteros, sin puntos ni signos.
 
-const PRODUCTS = [
+export const PRODUCTS = [
   {
     id: "creatina-300g",
     name: "Creatina Monohidrato Body Advance Gold Line",
@@ -30,19 +35,18 @@ const PRODUCTS = [
     category: "creatina",
     badge: "Lanzamiento",
     hasVariants: true,
+    variantLabel: "Presentación",
     variants: [
       {
         id: "pote",
         label: "Pote",
         inStock: true,
-        // TODO: reemplazar por foto real del pote, sin texto superpuesto.
         image: "images/creatina-pote-300g.png",
       },
       {
         id: "paquete",
         label: "Paquete",
         inStock: true,
-        // TODO: reemplazar por foto real del paquete, sin texto superpuesto.
         image: "images/Creatina-paquete-300g.png",
       },
     ],
@@ -73,19 +77,18 @@ const PRODUCTS = [
     category: "proteina",
     badge: "Lanzamiento",
     hasVariants: true,
+    variantLabel: "Sabor",
     variants: [
       {
         id: "vainilla",
         label: "Vainilla",
         inStock: true,
-        // TODO: reemplazar por foto real del pote sabor vainilla, sin texto superpuesto.
         image: "images/Whey-vainilla-908g.png",
       },
       {
         id: "chocolate",
         label: "Chocolate",
         inStock: true,
-        // TODO: reemplazar por foto real del pote sabor chocolate, sin texto superpuesto.
         image: "images/Whey-chocolate-908g.png",
       },
     ],

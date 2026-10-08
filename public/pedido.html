@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Estado de tu pedido | MYS Suplementos</title>
+<link rel="icon" type="image/png" href="images/logo-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script type="module" src="js/pedido.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="container site-header__row">
+    <a href="index.html" class="brand" aria-label="MYS Suplementos — inicio">
+      <img src="images/logo-icon.png" alt="" width="46" height="30">
+      <span class="brand__name">MYS <span>Suplementos</span></span>
+    </a>
+  </div>
+</header>
+<main class="status-page">
+  <div class="container">
+    <div class="card status-card" aria-live="polite">
+      <p class="eyebrow">Tu pedido</p>
+      <h1 id="order-number">—</h1>
+      <p id="status-pill" class="status-pill">Consultando…</p>
+      <p id="status-text">Estamos consultando el estado de tu pago.</p>
+      <a id="retry-btn" class="btn btn--primary btn--block btn--lg" href="#" hidden>Reintentar pago</a>
+      <a id="wa-btn" class="btn btn--ghost btn--block" href="#" target="_blank" rel="noopener" hidden>Consultar por WhatsApp</a>
+      <a class="btn btn--ghost btn--block" href="index.html">Volver a la tienda</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>
