@@ -17,8 +17,7 @@ run_worker_first = ["/api/*"]
 [[d1_databases]]
 binding = "DB"
 database_name = "mys-pedidos"
-# COMPLETAR: pegá el database_id que te muestra `npx wrangler d1 create mys-pedidos`.
-database_id = "COMPLETAR-DATABASE-ID"
+database_id = "ca8b1bef-0646-40cb-8d7d-97b79cd04e9c"
 migrations_dir = "migrations"
 
 # Variables NO secretas.
